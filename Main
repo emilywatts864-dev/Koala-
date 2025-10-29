@@ -1,0 +1,254 @@
+npm create vite@latest koala-academy-web -- --template react-ts
+cd koala-academy-web
+npm install
+koala-academy-web/
+├── index.html
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+├── postcss.config.cjs
+├── tailwind.config.cjs
+├── src/
+│   ├── main.tsx
+│   ├── App.tsx
+│   ├── index.css
+│   ├── components/
+│   │   ├── Navbar.tsx
+│   │   ├── DarkModeToggle.tsx
+│   │   └── SearchBar.tsx
+│   ├── pages/
+│   │   ├── Home.tsx
+│   │   ├── News.tsx
+│   │   ├── Shop.tsx
+│   │   ├── Courses.tsx
+│   │   └── Dashboard.tsx
+│   └── context/
+│       └── ThemeContext.tsx
+└── README.md
+{
+  "name": "koala-academy-web",
+  "version": "1.0.0",
+  "private": true,
+  "homepage": "https://koala.github.io/koala-academy-web",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "gh-pages": "^6.0.0",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.8"
+  }
+}
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  base: '/koala-academy-web/',
+});
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        koalaGreen: '#4C7A4C',
+        koalaGray: '#E5E7EB'
+      },
+    },
+  },
+  plugins: [],
+};
+import { createContext, useState, useEffect, ReactNode } from "react";
+
+export const ThemeContext = createContext({ theme: 'light', toggle: () => {} });
+
+export const ThemeProvider = ({ children }: { children: ReactNode }) => {
+  const [theme, setTheme] = useState(localStorage.theme || 'light');
+  const toggle = () => setTheme(theme === 'light' ? 'dark' : 'light');
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    localStorage.theme = theme;
+  }, [theme]);
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggle }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+import { useContext } from "react";
+import { ThemeContext } from "../context/ThemeContext";
+import DarkModeToggle from "./DarkModeToggle";
+
+export default function Navbar() {
+  const { theme } = useContext(ThemeContext);
+  const links = ["Home", "News", "Shop", "Courses", "Dashboard"];
+
+  return (
+    <nav className={`flex justify-between items-center p-4 ${theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-800"}`}>
+      <h1 className="font-bold text-2xl text-koalaGreen">Koala Academy</h1>
+      <div className="flex gap-4 items-center">
+        {links.map((l) => (
+          <a key={l} href={`#${l.toLowerCase()}`} className="hover:text-koalaGreen">{l}</a>
+        ))}
+        <DarkModeToggle />
+      </div>
+    </nav>
+  );
+}
+import { useContext } from "react";
+import { ThemeContext } from "../context/ThemeContext";
+
+export default function DarkModeToggle() {
+  const { theme, toggle } = useContext(ThemeContext);
+  return (
+    <button
+      onClick={toggle}
+      className="px-3 py-1 rounded-lg border text-sm hover:bg-koalaGreen hover:text-white"
+    >
+      {theme === "light" ? "Dark Mode" : "Light Mode"}
+    </button>
+  );
+}
+export default function SearchBar({ placeholder }: { placeholder: string }) {
+  return (
+    <input
+      type="text"
+      placeholder={placeholder}
+      className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-koalaGreen"
+    />
+  );
+}
+export default function Home() {
+  return (
+    <div className="p-6 text-center">
+      <h2 className="text-3xl font-semibold mb-4">Welcome to Koala Academy</h2>
+      <p className="text-gray-600 dark:text-gray-300">
+        Learn, grow, and connect with the world of Agriculture and Technology.
+      </p>
+    </div>
+  );
+}
+import SearchBar from "../components/SearchBar";
+
+export default function News() {
+  const posts = [
+    { title: "Modern Irrigation Techniques", content: "Learn efficient water management for better yields." },
+    { title: "Soil Testing Tips", content: "Simple ways to improve soil quality and fertility." }
+  ];
+
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-semibold mb-4">News & Tips</h2>
+      <SearchBar placeholder="Search news..." />
+      <div className="mt-4 space-y-3">
+        {posts.map((p, i) => (
+          <div key={i} className="border p-4 rounded-lg shadow-sm hover:shadow-md">
+            <h3 className="font-bold text-lg">{p.title}</h3>
+            <p className="text-gray-600 dark:text-gray-300">{p.content}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+import SearchBar from "../components/SearchBar";
+
+export default function Courses() {
+  const lessons = ["Intro to AgriTech", "Crop Management Basics", "Tech in Farming"];
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-semibold mb-4">Courses</h2>
+      <SearchBar placeholder="Search courses..." />
+      <ul className="mt-4 space-y-2">
+        {lessons.map((l, i) => (
+          <li key={i} className="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">{l}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+import SearchBar from "../components/SearchBar";
+
+export default function Shop() {
+  const products = [
+    { name: "Organic Fertilizer", price: "₵45" },
+    { name: "Smart Soil Sensor", price: "₵120" }
+  ];
+
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-semibold mb-4">Shop</h2>
+      <SearchBar placeholder="Search products..." />
+      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+        {products.map((p, i) => (
+          <div key={i} className="p-4 border rounded-lg shadow-sm hover:shadow-md">
+            <h3 className="font-semibold">{p.name}</h3>
+            <p className="text-koalaGreen">{p.price}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+export default function Dashboard() {
+  return (
+    <div className="p-6 text-center">
+      <h2 className="text-2xl font-semibold mb-4">User Dashboard</h2>
+      <p className="text-gray-600 dark:text-gray-300">
+        Manage your courses, products, and insights here.
+      </p>
+    </div>
+  );
+}
+import Navbar from "./components/Navbar";
+import Home from "./pages/Home";
+import News from "./pages/News";
+import Shop from "./pages/Shop";
+import Courses from "./pages/Courses";
+import Dashboard from "./pages/Dashboard";
+
+export default function App() {
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white">
+      <Navbar />
+      <main className="p-4 space-y-10">
+        <Home />
+        <News />
+        <Shop />
+        <Courses />
+        <Dashboard />
+      </main>
+    </div>
+  );
+}
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "./index.css";
+import { ThemeProvider } from "./context/ThemeContext";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
+  </React.StrictMode>
+);
+npm install
+npm run build
+npm run deploy
